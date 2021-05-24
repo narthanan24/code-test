@@ -1,13 +1,14 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {StyleSheet, Image, View} from "react-native";
 import * as data from '../data/blogData.json';
 import {StackNavigationProp} from "@react-navigation/stack";
 import {RootStackParamList} from "../Utils/static";
 import {useNavigation} from "@react-navigation/native";
 import * as Notifications from 'expo-notifications';
-import {Button, Card, Layout, List, Text} from "@ui-kitten/components";
+import {Button, Card, Layout, List, Text, Toggle} from "@ui-kitten/components";
 import {ThemeContext} from '../Components/theme-context';
 import LottieView from 'lottie-react-native';
+import {AuthProvider} from "../Components/AuthProvider";
 
 type blogScreenProp = StackNavigationProp<RootStackParamList, 'Blog'>;
 
@@ -15,13 +16,14 @@ export default () => {
     const navigation = useNavigation<blogScreenProp>();
     const themeContext = React.useContext(ThemeContext);
     const [items, setItems] = useState([])
-    const animation = useRef(null);
+    const {setAuth} = useContext(AuthProvider);
+
+    const [checked, setChecked] = useState(false);
 
     useEffect(() => {
         setTimeout(() => {
             setItems(data.blogs);
         }, 5000)
-        animation.current.play()
     }, [])
 
 
@@ -34,18 +36,26 @@ export default () => {
     }, [])
 
     return (
-        <Layout style={{justifyContent: "center", flex: 1}}>
+        <Layout style={styles.mainLayout}>
             {items.length > 0 ?
                 <>
-                    <Button style={{borderRadius: 0}} onPress={themeContext.toggleTheme}>TOGGLE THEME</Button>
+                    <Layout style={styles.headerLayout}>
+                        <Toggle checked={checked} onChange={() => {
+                            setChecked(!checked)
+                            themeContext.toggleTheme()
+                        }}/>
+                        <Button appearance='ghost' style={styles.logoutButton} onPress={() => setAuth(false)}>LOG
+                            OUT</Button>
+                    </Layout>
                     <List
+                        style={styles.listItems}
                         data={items}
                         keyExtractor={(_, index) => index.toString()}
                         renderItem={(item) => {
                             return (
                                 <Card style={styles.item}
                                       onPress={() => navigation.navigate('Blog', {'item': item.item})}>
-                                    <View style={{flexDirection: "row", alignItems: "center", paddingRight: 20}}>
+                                    <View style={styles.cardLayout}>
                                         <Image style={styles.image} source={{uri: item.item.imageUrl}}/>
                                         <Text
                                             style={styles.title}>{item.item.title.charAt(0).toUpperCase() + item.item.title.slice(0)}</Text>
@@ -55,7 +65,8 @@ export default () => {
                         }}
                     />
                 </> : <LottieView
-                    ref={animation}
+                    autoPlay
+                    loop
                     style={{
                         width: 400,
                         height: 400,
@@ -66,11 +77,32 @@ export default () => {
 };
 
 const styles = StyleSheet.create({
+    mainLayout: {
+        justifyContent: "center",
+        flex: 1
+    },
+    headerLayout: {
+        justifyContent: "space-between",
+        flexDirection: "row",
+        paddingHorizontal: 10,
+        backgroundColor: "#FFFFFF"
+    },
+    logoutButton: {
+        marginRight: -20
+    },
+    listItems: {
+        backgroundColor: "#FFFFFF"
+    },
+    cardLayout: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingRight: 20
+    },
     item: {
         height: 160,
         elevation: 3,
         borderRadius: 8,
-        marginTop: 12,
+        marginBottom: 12,
         marginHorizontal: 10,
     },
     image: {

@@ -2,23 +2,27 @@ import * as React from 'react';
 import {StyleSheet, View} from 'react-native';
 import {useForm, Controller} from 'react-hook-form';
 import firebase from 'firebase';
-import {useState} from "react";
+import {useContext, useState} from "react";
+import {Input, Layout, Text, Button, Spinner} from "@ui-kitten/components";
+import {AuthProvider} from "../Components/AuthProvider";
 import {useNavigation} from "@react-navigation/native";
 import {StackNavigationProp} from "@react-navigation/stack";
 import {RootStackParamList} from "../Utils/static";
-import {Input, Layout, Text, Button, Spinner} from "@ui-kitten/components";
 
 type FormData = {
     email: string;
     password: string;
 };
 
-type loginScreenProp = StackNavigationProp<RootStackParamList, 'Login'>;
+// type loginScreenProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
 export default () => {
-    const navigation = useNavigation<loginScreenProp>();
+    const {setAuth} = useContext(AuthProvider);
     const [formErr, setFormErr] = useState('');
     const [loading,setLoading] = useState(false);
+
+    // const navigation = useNavigation<loginScreenProp>();
+
 
     const {register, setValue, handleSubmit, control, reset, formState: {errors}} = useForm<FormData>();
 
@@ -26,7 +30,8 @@ export default () => {
         setLoading(true);
         firebase.auth().signInWithEmailAndPassword(data.email, data.password)
             .then(() => {
-                    navigation.navigate('Home')
+                    // navigation.navigate('Home')
+                    setAuth(true);
                 }
             )
             .catch((e) => {
@@ -51,6 +56,7 @@ export default () => {
                 control={control}
                 render={({field: {onChange, onBlur, value}}) => (
                     <Input
+                        textContentType={"emailAddress"}
                         style={styles.input}
                         onBlur={onBlur}
                         onChangeText={value => {
@@ -69,6 +75,7 @@ export default () => {
                 control={control}
                 render={({field: {onChange, onBlur, value}}) => (
                     <Input
+                        textContentType={"password"}
                         style={styles.input}
                         onBlur={onBlur}
                         onChangeText={value => {

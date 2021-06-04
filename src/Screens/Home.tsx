@@ -9,6 +9,7 @@ import {Button, Card, Layout, List, Text, Toggle} from "@ui-kitten/components";
 import {ThemeContext} from '../Components/theme-context';
 import LottieView from 'lottie-react-native';
 import {AuthProvider} from "../Components/AuthProvider";
+import firebase from 'firebase';
 
 type blogScreenProp = StackNavigationProp<RootStackParamList, 'Blog'>;
 
@@ -33,6 +34,15 @@ export default () => {
             Notifications.cancelScheduledNotificationAsync(response.notification.request.identifier)
             navigation.navigate('Blog', {'item': response.notification.request.content.data})
         });
+
+
+        // Get the access token from firebase
+        firebase.auth().currentUser.getIdToken(true).then((idToken) =>{
+            console.log(idToken)
+        }).catch((error)=> {
+            // Handle error
+        });
+
     }, [])
 
     return (
